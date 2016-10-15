@@ -11,6 +11,16 @@ import IoCError from './IoCError';
  */
 class BindingException extends IoCError{
 
+    /**
+     * Constructor
+     *
+     * @param {string} [message] Error message
+     */
+    constructor(message = 'Binding Exception'){
+        super(message);
+        this.name = this.constructor.name;
+        this.message = message; // ES2015 trick
+    }
 }
 
 export default BindingException;
