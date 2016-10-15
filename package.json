@@ -1,0 +1,24 @@
+{
+  "name": "@aedart/js-ioc",
+  "version": "0.1.0",
+  "description": "ES6 IoC Service Container",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aedart/js-ioc.git"
+  },
+  "keywords": [
+    "ioc",
+    "service",
+    "container"
+  ],
+  "author": "Alin Eugen Deac <aedart@gmail.com> (https://github.com/aedart)",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/aedart/js-ioc/issues"
+  },
+  "homepage": "https://github.com/aedart/js-ioc#readme"
+}
