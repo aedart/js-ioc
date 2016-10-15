@@ -15,6 +15,8 @@ class Binding {
      * @param {string} abstract Identifier
      * @param {callback|object|null} [concrete] The concrete instance of this binding
      * @param {boolean} [shared] The shared state of this binding
+     *
+     * @throws {BindingException} If invalid concrete
      */
     constructor(abstract, concrete = null, shared = false){
         this.abstract = abstract;
@@ -44,6 +46,8 @@ class Binding {
      * Set the concrete instance
      *
      * @param {callback|object|null} concrete
+     *
+     * @throws {BindingException} If invalid concrete
      */
     set concrete(concrete){
         let type = typeof concrete;
