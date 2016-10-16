@@ -2,50 +2,54 @@
 
 import Reflection from './../../../src/Utilities/Reflection';
 
-describe("Reflection", function () {
+xdescribe("Reflection", function () {
 
-    it("can determine if it's a class", function(){
-        class A {
-            constructor(foo, bar, baz){}
-        }
-
-        let z = function(foo, bar, baz){};
-
-        expect(Reflection.isClass(A)).toBe(true);
-        expect(Reflection.isClass(z)).toBe(false);
-    });
-
-    it("can determine if it's class, even if class does not have a constructor", function(){
-        class A {}
-
-        let z = function(){};
-
-        expect(Reflection.isClass(A)).toBe(true);
-        expect(Reflection.isClass(z)).toBe(false);
-    });
-
-    // Chrome will pass this... Firefox will however fail this!
-    // it("fails determining class if name is lowercase", function () {
-    //     // Nothing I can do about this... therefore, I do expect it
-    //     // to fail...
+    // it("can determine if it's a class", function(){
+    //     class A {
+    //         constructor(foo, bar, baz){}
+    //     }
     //
-    //     class a {}
+    //     let z = function(foo, bar, baz){};
     //
-    //     expect(Reflection.isClass(a)).toBe(true);
+    //     expect(Reflection.isClass(A)).toBe(true);
+    //     expect(Reflection.isClass(z)).toBe(false);
     // });
-
-    it("can obtain function argument names", function () {
-
-        let a = function(foo, bar, baz){};
-
-        let args = Reflection.argumentNames(a);
-
-        console.log('arguments', args);
-
-        expect(args).toContain('foo');
-        expect(args).toContain('bar');
-        expect(args).toContain('baz');
-    });
+    //
+    // // it("can determine if it's a class, when no class name provided", function(){
+    // //     console.log('<------------------------------------------------------------------>');
+    // //     let A = class {
+    // //         constructor(foo, bar, baz){}
+    // //     };
+    // //
+    // //     console.log('BEFORE REF.', A.name);
+    // //
+    // //     let z = function(foo, bar, baz){};
+    // //
+    // //     expect(Reflection.isClass(A)).toBe(true);
+    // //     expect(Reflection.isClass(z)).toBe(false);
+    // // });
+    //
+    // it("can determine if it's class, even if class does not have a constructor", function(){
+    //     class A {}
+    //
+    //     let z = function(){};
+    //
+    //     expect(Reflection.isClass(A)).toBe(true);
+    //     expect(Reflection.isClass(z)).toBe(false);
+    // });
+    //
+    // it("can obtain function argument names", function () {
+    //
+    //     let a = function(foo, bar, baz){};
+    //
+    //     let args = Reflection.argumentNames(a);
+    //
+    //     console.log('arguments', args);
+    //
+    //     expect(args).toContain('foo');
+    //     expect(args).toContain('bar');
+    //     expect(args).toContain('baz');
+    // });
 
     it("can obtain class constructor argument names", function () {
 

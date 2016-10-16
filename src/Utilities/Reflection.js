@@ -73,6 +73,8 @@ class Reflection {
     }
 
     /**
+     * @deprecated Too unsafe, due to a) relies on Function.name, which default minifiers might (will) change!
+     *
      * Returns true if the given target is class
      *
      * @param {*} target
@@ -84,54 +86,39 @@ class Reflection {
             return false;
         }
 
+        // Obtain the target Function.name. For reasons that are beyond
+        // me, we have to fetch it before invoking anything on the
+        // prototype. Not sure why or if it's a bug,...
+        // @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/name
+        let name = target.name;
+
         // Chrome makes somewhat easy in es6, the toString
         // method reveals that the keyword "class" is used
-        // if indeed the given target is a class.
+        // if indeed the given target is a class. This works
+        // for the most part.
         let source = target.prototype.constructor.toString();
         if(/^class\s/i.test(source)) {
             return true;
         }
 
-        // Firefox, on the other hand, is a bit more tricky. We can
-        // obtain the prototype constructor name, in which case there
-        // is a good chance that it is a class. If there is no name
-        // available, then (in Firefox) it cannot be a class.
-        // NOTE: Chrome actually returns the variable name at this point!
-        let name = target.prototype.constructor.name;
-        if( !name || !name.trim()){
+        // For Firefox (and perhaps other browsers), things are not that easy.
+        // Therefore, we fall back to checking the Function.name.
+        // We check to see if anything was returned. If not, then attempt to
+        // get the prototype constructor's name.
+        if( !name ){
+            name = target.prototype.constructor.name;
+        }
+
+        // If still no name was found, then there is nothing that we can do
+        if( !name ){
             return false;
         }
 
-        // If a name is present, then we do a final check - the if the
+        // But, if a name is present, then we do a final check! If the
         // first letter of the name is uppercase, then we assume that it
-        // is a class. Not the safest - but we cannot rely on toString methods
-        // here. There might not be any explicit class constructor (see #1.0).
-        return name.charCodeAt(0) === name.toUpperCase().charCodeAt(0);
-
-        // #1.0
-        // The code below was a different attempt. It worked, as long as each
-        // class had explicitly defined a constructor....
-
-        // // Obtain the prototype constructor name.
-        // let name = target.prototype.constructor.name;
-        //
-        // // However, for Firefox, it becomes a bit more difficult.
-        // // The trick is that if it's a class, then the prototype
-        // // constructor's string equivalent will be "function XXX(...",
-        // // whereas a none-class declared function will NOT have a
-        // // name included. Furthermore, we obtain that name and also
-        // // compare it with the prototype constructor name. If they
-        // // are the same, then we assume that it's a class.
-        // source = source.replace('function', '').trim();
-        // //source = source.replace('class', '').trim(); // Redundant here...
-        // let nameFromSource = source.slice(0, source.indexOf('('))[0];
-        //
-        // // Debug
-        // console.log('__PROTO__', source, target.prototype.constructor.name, nameFromSource);
-        //
-        // // If both the prototype constructor name and the name from source match,
-        // // then this must be a class.
-        // return name === nameFromSource;
+        // is a class. This may not be the safest approach - minifiers
+        // might (or rather will) lowercase the method name.
+        return (name.charCodeAt(0) === name.toUpperCase().charCodeAt(0));
     }
 }
 
