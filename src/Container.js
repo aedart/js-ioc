@@ -2,7 +2,6 @@
 
 import Binding from './Entries/Binding';
 import BindingException from './Exceptions/BindingException';
-import Reflection from './Utilities/Reflection';
 
 /**
  * Container's bindings
@@ -68,20 +67,52 @@ class Container {
         return this._instances;
     }
 
-    // TODO: jsDoc
-    bind(abstract, concrete = null, shared = false){
-
-        let binding = new Binding(abstract, concrete, shared);
-
-        this.bindings.set(binding.abstract, binding);
+    /**
+     * Register a binding in this container, with
+     * a callback method
+     *
+     * @param {string} abstract
+     * @param {function|null} [callback]
+     * @param {boolean} [shared]
+     */
+    bind(abstract, callback = null, shared = false){
+        this._bind(abstract, callback, shared, true);
     }
 
-    // TODO: jsDoc
+    /**
+     * Register a binding in this container, with
+     * a class reference.
+     *
+     * Class will be initialised via the "new" operator,
+     * whenever instance is resolved.
+     *
+     * @param {string} abstract
+     * @param {Function|null} [instance]
+     * @param {boolean} [shared]
+     */
+    bindInstance(abstract, instance = null, shared = false){
+        this._bind(abstract, instance, shared, false);
+    }
+
+    /**
+     * Check if binding exists for abstract
+     *
+     * @param {string} abstract
+     *
+     * @returns {boolean}
+     */
     bound(abstract){
         return this.bindings.has(abstract) || this.instances.has(abstract) || this.aliases.has(abstract);
     }
 
-    // TODO: jsDoc
+    /**
+     * Assign an alias for the abstract
+     *
+     * @param {string} abstract
+     * @param {string} alias
+     *
+     * @throws {BindingException} If no binding exists for the given abstract
+     */
     alias(abstract, alias){
         if( ! this.bound(abstract)){
             throw new BindingException('Cannot assign alias for abstract "' + abstract + '". Abstract has no binding.');
@@ -91,11 +122,25 @@ class Container {
     }
 
     // TODO: jsDoc
-    singleton(abstract, concrete = null){
-        this.bind(abstract, concrete, true);
+    singleton(abstract, callback = null){
+        this.bind(abstract, callback, true);
     }
 
     // TODO: jsDoc
+    singletonInstance(abstract, instance = null){
+        this.bindInstance(abstract, instance, true);
+    }
+
+    /**
+     * Resolve the registered abstract from the container
+     *
+     * @param {string} abstract
+     * @param {Array} [parameters]
+     *
+     * @returns {object}
+     *
+     * @throws {BindingException} If no binding exists for the given abstract
+     */
     make(abstract, parameters = []){
 
         // If an alias was given, find it's corresponding
@@ -110,19 +155,13 @@ class Container {
             return this.instances.get(abstract);
         }
 
-        // Obtain the matching binding and it's concrete
+        // Obtain the matching binding
         let binding = this.getBinding(abstract);
-        let concrete = binding.concrete;
-        let object = null;
 
         // Build the concrete instance, if concrete is buildable. Otherwise,
         // we must assume that the concrete is some kind of object that
         // we can return.
-        if(this._isBuildable(concrete)){
-            object = this.build(concrete, parameters);
-        } else {
-            object = concrete;
-        }
+        let object = this.build(binding, parameters);
 
         // If the binding was registered to be a shared instance (singleton),
         // then we must store the object reference, so that it can be returned
@@ -134,24 +173,30 @@ class Container {
         return object;
     }
 
-    build(concrete, parameters = []){
+    /**
+     * Build and return the concrete instance of the binding
+     *
+     * @param {Binding} binding
+     * @param {Array} [parameters]
+     *
+     * @returns {object}
+     */
+    build(binding, parameters = []){
 
-        // If concrete is a closure - a callback method, then
-        // we just execute it and expect the result to be what
-        // must be built.
-        // NOTE: We consider a class NOT to be a closure.
-        if( ! Reflection.isClass(concrete)){
+        // Fetch the registered concrete (callback or instance)
+        let concrete = binding.concrete;
+
+        // If concrete is a callback, then we invoke that closure
+        // and pass in the parameters and this container.
+        if(binding.isCallback){
             return concrete(this, parameters);
         }
 
-        // If a class is given, then we attempt to resolve eventual
-        // given dependencies. Sadly, JavaScript's reflections are not
-        // useful here, because there is no way of telling what the
-        // class constructor expects. Therefore, we need to rely on
-        // decorators for dependency injection.
-        // Thus, the only thing left is to attempt and new up the
-        // concrete instance.
-        return new concrete();
+        // If binding was registered as an instance, then we attempt
+        // to new up the instance.
+        // NOTE: Dependency injection has to be performed via
+        // "inject" decorator.
+        return new concrete;
     }
 
     /**
@@ -205,16 +250,18 @@ class Container {
     }
 
     /**
-     * Check if concrete is buildable
+     * Register a binding in the container
      *
-     * @param {*} concrete
-     *
-     * @returns {boolean}
-     *
+     * @param {string }abstract
+     * @param {function|object|null} [concrete]
+     * @param {boolean} [shared]
+     * @param {boolean} [isConcreteCallback]
      * @private
      */
-    _isBuildable(concrete){
-        return typeof concrete === 'function';
+    _bind(abstract, concrete = null, shared = false, isConcreteCallback = true){
+        let binding = new Binding(abstract, concrete, shared, isConcreteCallback);
+
+        this.bindings.set(binding.abstract, binding);
     }
 }
 

@@ -24,7 +24,7 @@ describe("IoC Container", function () {
             return new IoC();
         };
 
-        expect(f).toThrowError(TypeError, 'instance is not a constructor');
+        expect(f).toThrowError(TypeError);
     });
 
     it("has empty bindings by default", function () {
@@ -35,7 +35,7 @@ describe("IoC Container", function () {
         expect(result).toBe(0);
     });
 
-    it("can bind concrete to abstract", function () {
+    it("can bind callback to abstract", function () {
         let abstract = faker.random.uuid();
         let concrete = function(){
             return true;
@@ -46,6 +46,19 @@ describe("IoC Container", function () {
         console.log('binding', IoC.bindings.get(abstract));
 
         expect(IoC.bound(abstract)).toBe(true);
+        expect(IoC.getBinding(abstract).isCallback).toBe(true);
+    });
+
+    it("can bind instance to abstract", function () {
+        let abstract = faker.random.uuid();
+        class A {}
+
+        IoC.bindInstance(abstract, A);
+
+        console.log('binding', IoC.bindings.get(abstract));
+
+        expect(IoC.bound(abstract)).toBe(true);
+        expect(IoC.getBinding(abstract).isCallback).toBe(false);
     });
 
     it("can assign alias for abstract", function () {
@@ -72,5 +85,31 @@ describe("IoC Container", function () {
         expect(f).toThrowError(BindingException);
     });
 
+    it("can make (resolve) instance from callback", function () {
+        let myInstance = Symbol('My Instance');
 
+        let abstract = faker.random.uuid();
+        let concrete = function(ioc, params = []){
+            return myInstance;
+        };
+
+        IoC.bind(abstract, concrete);
+
+        let resolved = IoC.make(abstract);
+
+        expect(resolved).toBe(myInstance);
+    });
+
+    it("can make (resolve) instance from class reference", function () {
+
+        let abstract = faker.random.uuid();
+
+        class A {}
+
+        IoC.bindInstance(abstract, A);
+
+        let resolved = IoC.make(abstract);
+
+        expect(resolved instanceof A).toBe(true);
+    });
 });
