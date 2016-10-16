@@ -92,26 +92,46 @@ class Reflection {
             return true;
         }
 
-        // Obtain the prototype constructor name.
+        // Firefox, on the other hand, is a bit more tricky. We can
+        // obtain the prototype constructor name, in which case there
+        // is a good chance that it is a class. If there is no name
+        // available, then (in Firefox) it cannot be a class.
+        // NOTE: Chrome actually returns the variable name at this point!
         let name = target.prototype.constructor.name;
+        if( !name || !name.trim()){
+            return false;
+        }
 
-        // However, for Firefox, it becomes a bit more difficult.
-        // The trick is that if it's a class, then the prototype
-        // constructor's string equivalent will be "function XXX(...",
-        // whereas a none-class declared function will NOT have a
-        // name included. Furthermore, we obtain that name and also
-        // compare it with the prototype constructor name. If they
-        // are the same, then we assume that it's a class.
-        source = source.replace('function', '').trim();
-        //source = source.replace('class', '').trim(); // Redundant here...
-        let nameFromSource = source.slice(0, source.indexOf('('))[0];
+        // If a name is present, then we do a final check - the if the
+        // first letter of the name is uppercase, then we assume that it
+        // is a class. Not the safest - but we cannot rely on toString methods
+        // here. There might not be any explicit class constructor (see #1.0).
+        return name.charCodeAt(0) === name.toUpperCase().charCodeAt(0);
 
-        // Debug
-        //console.log('__PROTO__', source, target.prototype.constructor.name, nameFromSource);
+        // #1.0
+        // The code below was a different attempt. It worked, as long as each
+        // class had explicitly defined a constructor....
 
-        // If both the prototype constructor name and the name from source match,
-        // then this must be a class.
-        return name === nameFromSource;
+        // // Obtain the prototype constructor name.
+        // let name = target.prototype.constructor.name;
+        //
+        // // However, for Firefox, it becomes a bit more difficult.
+        // // The trick is that if it's a class, then the prototype
+        // // constructor's string equivalent will be "function XXX(...",
+        // // whereas a none-class declared function will NOT have a
+        // // name included. Furthermore, we obtain that name and also
+        // // compare it with the prototype constructor name. If they
+        // // are the same, then we assume that it's a class.
+        // source = source.replace('function', '').trim();
+        // //source = source.replace('class', '').trim(); // Redundant here...
+        // let nameFromSource = source.slice(0, source.indexOf('('))[0];
+        //
+        // // Debug
+        // console.log('__PROTO__', source, target.prototype.constructor.name, nameFromSource);
+        //
+        // // If both the prototype constructor name and the name from source match,
+        // // then this must be a class.
+        // return name === nameFromSource;
     }
 }
 

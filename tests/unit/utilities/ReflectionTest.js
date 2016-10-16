@@ -15,6 +15,25 @@ describe("Reflection", function () {
         expect(Reflection.isClass(z)).toBe(false);
     });
 
+    it("can determine if it's class, even if class does not have a constructor", function(){
+        class A {}
+
+        let z = function(){};
+
+        expect(Reflection.isClass(A)).toBe(true);
+        expect(Reflection.isClass(z)).toBe(false);
+    });
+
+    // Chrome will pass this... Firefox will however fail this!
+    // it("fails determining class if name is lowercase", function () {
+    //     // Nothing I can do about this... therefore, I do expect it
+    //     // to fail...
+    //
+    //     class a {}
+    //
+    //     expect(Reflection.isClass(a)).toBe(true);
+    // });
+
     it("can obtain function argument names", function () {
 
         let a = function(foo, bar, baz){};
