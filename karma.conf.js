@@ -3,6 +3,8 @@
 const buble = require('rollup-plugin-buble');
 const commonjs = require('rollup-plugin-commonjs');
 const nodeResolve = require('rollup-plugin-node-resolve');
+const uglify = require('rollup-plugin-uglify');
+const minify = require('uglify-js-harmony').minify;
 
 module.exports = function(config) {
   config.set({
@@ -98,7 +100,13 @@ module.exports = function(config) {
         commonjs({
           include: 'node_modules/**'
         }),
-        //buble() // ES2015 compiler by the same author as Rollup
+        //buble(), // ES2015 compiler by the same author as Rollup
+        // uglify({
+        //   // mangle: false, // VERY IMPORTANT!
+        //   // compress: {
+        //   //   keep_fnames: true // VERY IMPORTANT!
+        //   // }
+        // }, minify) // TODO: Plugin fails
       ],
       // will help to prevent conflicts between different tests entries
       format: 'iife',
