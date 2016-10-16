@@ -15,13 +15,15 @@ class Binding {
      * @param {string} abstract Identifier
      * @param {callback|object|null} [concrete] The concrete instance of this binding
      * @param {boolean} [shared] The shared state of this binding
+     * @param {boolean} [isConcreteCallback] True if concrete is a callback, false if it's an instance
      *
      * @throws {BindingException} If invalid concrete
      */
-    constructor(abstract, concrete = null, shared = false){
+    constructor(abstract, concrete = null, shared = false, isConcreteCallback = true){
         this.abstract = abstract;
         this.concrete = concrete;
         this.shared = shared;
+        this.isCallback = isConcreteCallback;
     }
 
     /**
@@ -57,6 +59,24 @@ class Binding {
         }
 
         this._concrete = concrete;
+    }
+
+    /**
+     * Set concrete state - if it's a callback or not
+     *
+     * @param {boolean} isConcreteCallback
+     */
+    set isCallback(isConcreteCallback){
+        this._isCallback = isConcreteCallback;
+    }
+
+    /**
+     * Get concrete state - if it's a callback or not
+     *
+     * @returns {boolean}
+     */
+    get isCallback(){
+        return this._isCallback;
     }
 
     /**

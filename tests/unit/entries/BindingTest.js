@@ -13,14 +13,16 @@ describe("Binding Entry", function () {
             return true;
         };
         let shared = faker.random.boolean();
+        let isCallback = faker.random.boolean(); // Does not matter here
 
-        let binding = new Binding(abstract, concrete, shared);
+        let binding = new Binding(abstract, concrete, shared, isCallback);
 
         console.log(binding);
 
         expect(binding.abstract).toBe(abstract);
         expect(binding.concrete).toBe(concrete);
         expect(binding.shared).toBe(shared);
+        expect(binding.isCallback).toBe(isCallback);
     });
 
     it("fails when concrete is not a callback, object or null", function () {
