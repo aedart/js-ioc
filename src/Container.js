@@ -36,9 +36,9 @@ class Container {
      * Constructor
      */
     constructor(){
-        this[bindings] = bindings;
-        this[aliases] = aliases;
-        this[instances] = instances;
+        this._bindings = bindings;
+        this._aliases = aliases;
+        this._instances = instances;
     }
 
     /**
@@ -47,7 +47,7 @@ class Container {
      * @returns {Map<string, Binding>}
      */
     get bindings(){
-        return this[bindings];
+        return this._bindings;
     }
 
     /**
@@ -56,7 +56,7 @@ class Container {
      * @returns {Map<string, string>}
      */
     get aliases(){
-        return this[aliases];
+        return this._aliases;
     }
 
     /**
@@ -65,7 +65,7 @@ class Container {
      * @returns {Map<string, *>}
      */
     get instances(){
-        return this[instances];
+        return this._instances;
     }
 
     // TODO: jsDoc
@@ -78,7 +78,7 @@ class Container {
 
     // TODO: jsDoc
     bound(abstract){
-        return this.bindings.has(abstract) || this.aliases.has(abstract);
+        return this.bindings.has(abstract) || this.instances.has(abstract) || this.aliases.has(abstract);
     }
 
     // TODO: jsDoc
@@ -147,8 +147,11 @@ class Container {
         // If a class is given, then we attempt to resolve eventual
         // given dependencies. Sadly, JavaScript's reflections are not
         // useful here, because there is no way of telling what the
-        // class constructor expects. Therefore, this IoC uses a technique
-        // which is applied by ... TODO: Decorators?
+        // class constructor expects. Therefore, we need to rely on
+        // decorators for dependency injection.
+        // Thus, the only thing left is to attempt and new up the
+        // concrete instance.
+        return new concrete();
     }
 
     /**
@@ -196,8 +199,9 @@ class Container {
 
     // TODO: jsDoc
     flush(){
-        this[bindings].clear();
-        this[aliases].clear();
+        this.bindings.clear();
+        this.aliases.clear();
+        this.instances.clear();
     }
 
     /**
