@@ -63,6 +63,7 @@ module.exports = function(config) {
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     //browsers: ['Chrome', 'Firefox', 'PhantomJS'],
     browsers: ['Chrome', 'Firefox'],
+    //browsers: ['Chrome', 'Firefox', 'IE_no_addons'],
 
 
     // Continuous Integration mode
@@ -72,6 +73,13 @@ module.exports = function(config) {
     // Concurrency level
     // how many browser should be started simultaneous
     concurrency: Infinity,
+
+    customLaunchers: {
+      IE_no_addons: {
+        base:  'IE',
+        flags: ['-extoff']
+      }
+    },
 
     // TODO: Phantom JS 2 does not fully support es6!
     phantomjsLauncher: {
