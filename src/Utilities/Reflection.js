@@ -84,9 +84,6 @@ class Reflection {
             return false;
         }
 
-        // Obtain the prototype constructor name.
-        let name = target.prototype.constructor.name;
-
         // Chrome makes somewhat easy in es6, the toString
         // method reveals that the keyword "class" is used
         // if indeed the given target is a class.
@@ -94,6 +91,9 @@ class Reflection {
         if(/^class\s/i.test(source)) {
             return true;
         }
+
+        // Obtain the prototype constructor name.
+        let name = target.prototype.constructor.name;
 
         // However, for Firefox, it becomes a bit more difficult.
         // The trick is that if it's a class, then the prototype
