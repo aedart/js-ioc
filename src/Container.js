@@ -2,6 +2,8 @@
 
 import Binding from './Entries/Binding';
 import BindingException from './Exceptions/BindingException';
+import HasDependencies from './Contracts/HasDependencies';
+import BuildException from './Exceptions/BuildException';
 
 /**
  * Container's bindings
@@ -174,29 +176,47 @@ class Container {
     }
 
     /**
-     * Build and return the concrete instance of the binding
+     * Build and return the concrete instance of given type
      *
-     * @param {Binding} binding
+     * @param {Function|Binding|HasDependencies} concrete
      * @param {Array} [parameters]
      *
      * @returns {object}
      */
-    build(binding, parameters = []){
+    build(concrete, parameters = []){
 
-        // Fetch the registered concrete (callback or instance)
-        let concrete = binding.concrete;
-
-        // If concrete is a callback, then we invoke that closure
-        // and pass in the parameters and this container.
-        if(binding.isCallback){
-            return concrete(this, parameters);
+        // If the given "concrete" is a Binding instance and it's
+        // declared as having a callback, then invoke the callback
+        // with this contain and given parameters.
+        if(concrete instanceof Binding && concrete.isCallback){
+            return concrete.concrete(this, parameters);
         }
 
-        // If binding was registered as an instance, then we attempt
-        // to new up the instance.
-        // NOTE: Dependency injection has to be performed via
-        // "inject" decorator.
-        return new concrete;
+        // If the concrete is a Binding, but not a callback, then
+        // obtain the binding's concrete
+        if(concrete instanceof Binding){
+            concrete = concrete.concrete;
+        }
+
+        // If null was bound or given, then just return null
+        if(concrete === null){
+            return concrete;
+        }
+
+        // Unlike PHP which has a pretty good Reflection class, JavaScript
+        // does not offer that much. Therefore, in order to resolve eventual
+        // nested dependencies, we check if the given concrete is an
+        // instance of "Has Dependencies". If so, we use the static dependencies
+        // method to obtain abstracts, aliases or perhaps concrete object
+        // instances, which can then inject straight into the instance that we
+        // must create. However, we avoid doing this, if parameters are provided.
+        // This should give the developer plenty of flexibility...
+        if(concrete instanceof HasDependencies && parameters.length == 0){
+            parameters = this._getDependencies(concrete);
+        }
+
+        // Finally, initiate the new instance
+        return new concrete(...parameters);
     }
 
     /**
@@ -262,6 +282,46 @@ class Container {
         let binding = new Binding(abstract, concrete, shared, isConcreteCallback);
 
         this.bindings.set(binding.abstract, binding);
+    }
+
+    /**
+     * Resolves and returns a list of dependencies
+     *
+     * @param {HasDependencies} concrete
+     * @returns {Array}
+     * @private
+     */
+    _getDependencies(concrete){
+
+        let args = [];
+
+        // Fetch the dependencies list.
+        let dependencies = concrete.dependencies();
+
+        // Resolve each dependency
+        for(let elem in dependencies){
+
+            switch (typeof elem){
+                // Abstract or alias
+                case 'string':
+                    args.push(this.make(elem));
+                    break;
+                // Object instance
+                case 'object':
+                    args.push(elem);
+                    break;
+                // Class reference
+                case 'function':
+                    args.push(this.build(elem));
+                    break;
+                // Unknown
+                default:
+                    throw new BuildException('Unable to resolve "' + elem.toString() + '" dependency for "' + concrete.toString() + '"');
+                    break;
+            }
+        }
+
+        return args;
     }
 }
 

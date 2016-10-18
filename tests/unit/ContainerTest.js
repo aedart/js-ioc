@@ -112,4 +112,8 @@ describe("IoC Container", function () {
 
         expect(resolved instanceof A).toBe(true);
     });
+
+    it("TODO: build tests", function () {
+        // TODO: ... 
+    });
 });
