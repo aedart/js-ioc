@@ -37,5 +37,8 @@
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-uglify": "^1.0.1",
     "uglify-js-harmony": "^2.6.2"
+  },
+  "dependencies": {
+    "mixwith": "~0.1"
   }
 }
