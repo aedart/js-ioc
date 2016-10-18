@@ -47,14 +47,14 @@ export default class Binding {
     /**
      * Set the concrete instance
      *
-     * @param {callback|object|null} concrete
+     * @param {callback|Function|null} concrete
      *
      * @throws {BindingException} If invalid concrete
      */
     set concrete(concrete){
         let type = typeof concrete;
 
-        if( ! (type === 'function' || type === 'object' || type === null)){
+        if( ! (type === 'function' || type === null)){
             throw new BindingException('Concrete must be a callback, an object or null');
         }
 
@@ -82,7 +82,7 @@ export default class Binding {
     /**
      * Get the concrete instance
      *
-     * @returns {callback|object|null}
+     * @returns {callback|Function|null}
      */
     get concrete(){
         return this._concrete;
