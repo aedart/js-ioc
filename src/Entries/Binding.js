@@ -7,7 +7,7 @@ import BindingException from './../Exceptions/BindingException';
  *
  * @author Alin Eugen Deac <aedart@gmail.com>
  */
-class Binding {
+export default class Binding {
 
     /**
      * Constructor
@@ -106,5 +106,3 @@ class Binding {
         return this._shared;
     }
 }
-
-export default Binding;

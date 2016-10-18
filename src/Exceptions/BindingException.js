@@ -9,7 +9,7 @@ import IoCError from './IoCError';
  *
  * @author Alin Eugen Deac <aedart@gmail.com>
  */
-class BindingException extends IoCError{
+export default class BindingException extends IoCError{
 
     /**
      * Constructor
@@ -22,5 +22,3 @@ class BindingException extends IoCError{
         this.message = message; // ES2015 trick
     }
 }
-
-export default BindingException;

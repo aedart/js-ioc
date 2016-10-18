@@ -9,7 +9,7 @@
  *
  * @author Alin Eugen Deac <aedart@gmail.com>
  */
-class IoCError extends Error {
+export default class IoCError extends Error {
 
     /**
      * Constructor
@@ -23,5 +23,3 @@ class IoCError extends Error {
     }
 
 }
-
-export default IoCError;
