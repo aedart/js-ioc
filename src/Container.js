@@ -183,12 +183,28 @@ class Container {
         this.aliases.set(alias, abstract);
     }
 
-    // TODO: jsDoc
+    /**
+     * Register a singleton (shared) binding
+     *
+     * @see Container.bind()
+     *
+     * @param {string} abstract
+     * @param {function|null} [callback]
+     */
     singleton(abstract, callback = null){
         this.bind(abstract, callback, true);
     }
 
-    // TODO: jsDoc
+    /**
+     * Register a singleton (shared) binding to the
+     * given instance
+     *
+     * @see Container.bindInstance()
+     *
+     * @param {string} abstract
+     * @param {Function|null} [instance] Class reference
+     * @param {Array<*>} [dependencies]
+     */
     singletonInstance(abstract, instance = null, dependencies = []){
         this.bindInstance(abstract, instance, true, dependencies);
     }
@@ -323,13 +339,29 @@ class Container {
         return this.bindings.get(abstract);
     }
 
-    // TODO: jsDoc
-    forget(abstract){}
+    /**
+     * Forget the given binding
+     *
+     * @param {string|Function} abstractOrInstance
+     */
+    forget(abstractOrInstance){
+        this.bindings.delete(abstractOrInstance);
+        this.aliases.delete(abstractOrInstance);
+        this.instances.delete(abstractOrInstance);
+        Meta.delete(abstractOrInstance);
+    }
 
-    // TODO: jsDoc
+    /**
+     * Flush the container
+     */
     flush(){
         this.bindings.clear();
         this.aliases.clear();
+
+        this.instances.forEach(function(value, key){
+            Meta.delete(value);
+        });
+
         this.instances.clear();
     }
 
