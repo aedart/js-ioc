@@ -6,25 +6,28 @@ import HasDependencies from './Contracts/HasDependencies';
 import BuildException from './Exceptions/BuildException';
 
 /**
- * Container's bindings
+ * Bindings symbol
  *
- * @type {Map<string, Binding>}
+ * @type {Symbol}
+ * @private
  */
-const bindings = new Map();
+const _bindings = Symbol('ioc-bindings');
 
 /**
- * Aliases
+ * Aliases symbol
  *
- * @type {Map<string, string>}
+ * @type {Symbol}
+ * @private
  */
-const aliases = new Map();
+const _aliases = Symbol('ioc-aliases');
 
 /**
- * Shared instances
+ * Instances symbol
  *
- * @type {Map<string, *>}
+ * @type {Symbol}
+ * @private
  */
-const instances = new Map();
+const _instances = Symbol('ioc-instances');
 
 /**
  * IoC Service Container
@@ -37,9 +40,9 @@ class Container {
      * Constructor
      */
     constructor(){
-        this._bindings = bindings;
-        this._aliases = aliases;
-        this._instances = instances;
+        this[_bindings] = new Map();
+        this[_aliases] = new Map();
+        this[_instances] = new Map();
     }
 
     /**
@@ -48,7 +51,7 @@ class Container {
      * @returns {Map<string, Binding>}
      */
     get bindings(){
-        return this._bindings;
+        return this[_bindings];
     }
 
     /**
@@ -57,7 +60,7 @@ class Container {
      * @returns {Map<string, string>}
      */
     get aliases(){
-        return this._aliases;
+        return this[_aliases];
     }
 
     /**
@@ -66,7 +69,7 @@ class Container {
      * @returns {Map<string, *>}
      */
     get instances(){
-        return this._instances;
+        return this[_instances];
     }
 
     /**
