@@ -39,6 +39,6 @@
     "uglify-js-harmony": "^2.6.2"
   },
   "dependencies": {
-
+    "@aedart/js-meta": "~1.0"
   }
 }
