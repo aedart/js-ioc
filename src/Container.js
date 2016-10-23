@@ -2,8 +2,8 @@
 
 import Binding from './Entries/Binding';
 import BindingException from './Exceptions/BindingException';
-import HasDependencies from './Contracts/HasDependencies';
 import BuildException from './Exceptions/BuildException';
+import Meta from '@aedart/js-meta';
 
 /**
  * Bindings symbol
@@ -28,6 +28,14 @@ const _aliases = Symbol('ioc-aliases');
  * @private
  */
 const _instances = Symbol('ioc-instances');
+
+/**
+ * Prefix key for dependencies that
+ * need to be resolved by the IoC
+ *
+ * @type {string}
+ */
+const REFERENCE_KEY = '@ref:';
 
 /**
  * IoC Service Container
@@ -181,10 +189,12 @@ class Container {
     /**
      * Build and return the concrete instance of given type
      *
-     * @param {Function|Binding|HasDependencies} concrete
+     * @param {Function|Binding} concrete
      * @param {Array} [parameters]
      *
      * @returns {object}
+     *
+     * @throws {BuildException}
      */
     build(concrete, parameters = []){
 
@@ -206,16 +216,18 @@ class Container {
             return concrete;
         }
 
-        // Unlike PHP which has a pretty good Reflection class, JavaScript
-        // does not offer that much. Therefore, in order to resolve eventual
-        // nested dependencies, we check if the given concrete is an
-        // instance of "Has Dependencies". If so, we use the static dependencies
-        // method to obtain abstracts, aliases or perhaps concrete object
-        // instances, which can then inject straight into the instance that we
-        // must create. However, we avoid doing this, if parameters are provided.
-        // This should give the developer plenty of flexibility...
-        if(concrete instanceof HasDependencies && parameters.length == 0){
-            parameters = this._getDependencies(concrete);
+        // Unlike PHP, JavaScript still does not have much to offer, when
+        // it comes to class reflections. There is no way that we can tell
+        // what kind of "types" might be expected on a concrete instance.
+        // Therefore, the only way we can build the instance with the correct
+        // dependencies (if any), is to check if some "meta data" has been
+        // defined for the instance.
+        //
+        // But, we only do so, if empty params are given. This way, if the
+        // developer desires to build an instance with a different set of
+        // dependencies, then that should be allowed.
+        if(Meta.hasClass(concrete) && parameters.length == 0){
+            parameters = this.getDependencies(concrete);
         }
 
         // Finally, initiate the new instance
@@ -273,6 +285,102 @@ class Container {
     }
 
     /**
+     * Resolves and returns a list of dependencies
+     *
+     * Method assumes that given concrete has associated
+     * "meta data" in which one or several dependencies
+     * are defined.
+     *
+     * @see Meta.addClass()
+     *
+     * @param {Function} concrete
+     * @returns {Array}
+     *
+     * @throws {BuildException}
+     * @throws {BindingException}
+     */
+    getDependencies(concrete){
+
+        let args = [];
+
+        // Fetch the dependencies from the concrete's
+        // associated meta class (or method) data.
+        // If none is available, then return empty dependencies.
+        if( ! (Meta.hasClass(concrete) || Meta.hasMethod(concrete))){
+            return args;
+        }
+
+        let dependencies = Meta.get(concrete).dependencies;
+
+        // Resolve each dependency
+        let depLength = dependencies.length;
+        for(let i = 0; i < depLength; i++){
+            let elem = dependencies[i];
+
+            switch (typeof elem){
+                // String
+                case 'string':
+
+                    // If string is actually an abstract or alias reference
+                    // Then we must resolve it.
+                    let resolved = elem;
+                    if(this.containsReference(elem)){
+                        resolved = this.resolveReference(elem);
+                    }
+
+                    args[args.length] = resolved;
+                    break;
+
+                // Object, boolean or number
+                case 'object':
+                case 'boolean':
+                case 'number':
+                    args[args.length] = elem;
+                    break;
+
+                // Class reference
+                case 'function':
+                    args[args.length] = this.build(elem);
+                    break;
+
+                // Unknown
+                default:
+                    throw new BuildException('Unable to resolve "' + elem.toString() + '" dependency for "' + concrete.toString() + '"');
+                    break;
+            }
+        }
+
+        // Finally, return the dependencies
+        return args;
+    }
+
+    /**
+     * Check if string contains a reference to an
+     * "abstract" or "alias"
+     *
+     * @param {string} elem
+     *
+     * @returns {boolean}
+     */
+    containsReference(elem){
+        return elem.startsWith(REFERENCE_KEY);
+    }
+
+    /**
+     * Resolves a string reference to an "abstract" or
+     * "alias"
+     *
+     * @param {string} elem
+     *
+     * @returns {Object}
+     *
+     * @throws {BindingException}
+     */
+    resolveReference(elem){
+        return this.make(elem.replace(REFERENCE_KEY, ''));
+    }
+
+    /**
      * Register a binding in the container
      *
      * @param {string }abstract
@@ -286,46 +394,6 @@ class Container {
 
         this.bindings.set(binding.abstract, binding);
     }
-
-    /**
-     * Resolves and returns a list of dependencies
-     *
-     * @param {HasDependencies} concrete
-     * @returns {Array}
-     * @private
-     */
-    _getDependencies(concrete){
-
-        let args = [];
-
-        // Fetch the dependencies list.
-        let dependencies = concrete.dependencies();
-
-        // Resolve each dependency
-        for(let elem in dependencies){
-
-            switch (typeof elem){
-                // Abstract or alias
-                case 'string':
-                    args.push(this.make(elem));
-                    break;
-                // Object instance
-                case 'object':
-                    args.push(elem);
-                    break;
-                // Class reference
-                case 'function':
-                    args.push(this.build(elem));
-                    break;
-                // Unknown
-                default:
-                    throw new BuildException('Unable to resolve "' + elem.toString() + '" dependency for "' + concrete.toString() + '"');
-                    break;
-            }
-        }
-
-        return args;
-    }
 }
 
 // Singleton
@@ -333,3 +401,6 @@ const instance = new Container();
 Object.freeze(instance);
 
 export default instance;
+
+// Reference key
+export { REFERENCE_KEY };
