@@ -113,7 +113,67 @@ describe("IoC Container", function () {
         expect(resolved instanceof A).toBe(true);
     });
 
-    it("TODO: build tests", function () {
-        // TODO: ... 
+    it("can make (resolve) instance from class reference, with dependencies", function () {
+        let abstractA = faker.random.uuid();
+        let abstractB = faker.random.uuid();
+
+        class A {}
+        class B {
+            constructor(classA){
+                this.classA = classA;
+            }
+        }
+
+        IoC.bindInstance(abstractA, A);
+        IoC.bindInstance(abstractB, B, false, [
+            '@ref:' + abstractA
+        ]);
+
+        let resolved = IoC.make(abstractB);
+
+        expect(resolved instanceof B).toBe(true);
+        expect(resolved.classA instanceof A).toBe(true);
+    });
+
+    it("can make (resolve) shared instance from callback", function () {
+        let myInstance = null;
+
+        let abstract = faker.random.uuid();
+        let concrete = function(ioc, params = []){
+            let x = class A {
+                constructor(){
+                    this.id = faker.random.uuid();
+                }
+            };
+
+            return myInstance = new x();
+        };
+
+        IoC.singleton(abstract, concrete);
+
+        let resolvedA = IoC.make(abstract);
+        let resolvedB = IoC.make(abstract);
+
+        expect(resolvedA).toBe(resolvedB);
+        expect(resolvedA.id).toBe(resolvedB.id);
+    });
+
+    it("can make (resolve) shared instance from class reference", function () {
+
+        let abstract = faker.random.uuid();
+
+        class A {
+            constructor(){
+                this.id = faker.random.uuid();
+            }
+        }
+
+        IoC.singletonInstance(abstract, A);
+
+        let resolvedA = IoC.make(abstract);
+        let resolvedB = IoC.make(abstract);
+
+        expect(resolvedA).toBe(resolvedB);
+        expect(resolvedA.id).toBe(resolvedB.id);
     });
 });
