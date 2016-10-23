@@ -481,6 +481,4 @@ const instance = new Container();
 Object.freeze(instance);
 
 export default instance;
-
-// Reference key
 export { REFERENCE_KEY };
