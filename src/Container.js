@@ -245,7 +245,7 @@ class Container {
         // then we must store the object reference, so that it can be returned
         // when it is requested again.
         if(binding.shared){
-            this.instances[abstract] = object;
+            this.instances.set(abstract, object);
         }
 
         return object;
