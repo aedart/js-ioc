@@ -445,11 +445,6 @@ class Container {
     }
 }
 
-/**
- * IoC Service Container
- *
- * @type {Container}
- */
 const instance = new Container();
 Object.freeze(instance);
 
