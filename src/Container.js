@@ -4,6 +4,8 @@ import Binding from './Entries/Binding';
 import BindingException from './Exceptions/BindingException';
 import BuildException from './Exceptions/BuildException';
 import Meta from '@aedart/js-meta';
+import { ClassData } from '@aedart/js-meta';
+import { MethodData } from '@aedart/js-meta';
 
 /**
  * Bindings symbol
@@ -32,6 +34,9 @@ const _instances = Symbol('ioc-instances');
 /**
  * Prefix key for dependencies that
  * need to be resolved by the IoC
+ *
+ * @see Container.defineDependencies()
+ * @see Container.getDependencies()
  *
  * @type {string}
  */
@@ -99,12 +104,56 @@ class Container {
      * Class will be initialised via the "new" operator,
      * whenever instance is resolved.
      *
+     * @see defineDependencies()
+     *
      * @param {string} abstract
-     * @param {Function|null} [instance]
+     * @param {Function|null} [instance] Class reference
      * @param {boolean} [shared]
+     * @param {Array<*>} [dependencies]
      */
-    bindInstance(abstract, instance = null, shared = false){
+    bindInstance(abstract, instance = null, shared = false, dependencies = []){
         this._bind(abstract, instance, shared, false);
+
+        if(dependencies.length > 0){
+            this.defineDependencies(instance, dependencies);
+        }
+    }
+
+    /**
+     * Define dependencies for the given instance
+     *
+     * If the given dependencies are supposed to be
+     * references to "abstracts" or "aliases", then
+     * prefix each reference with the "reference key"
+     *
+     * @see REFERENCE_KEY
+     *
+     * @see Meta.addClass()
+     * @see Meta.addMethod()
+     *
+     * @param {Function} instance A class or a method
+     * @param {Array<*>} [dependencies]
+     * @param {boolean} [isClass] If false, then instance is assumed to be a method
+     *
+     * @return {ClassData|MethodData}
+     */
+    defineDependencies(instance, dependencies = [], isClass = true){
+        // Do not add dependencies for null!
+        if(instance === null){
+            return;
+        }
+
+        // Create the meta data
+        let metaData = null;
+        if(isClass){
+            metaData = Meta.addClass(instance);
+        } else {
+            metaData = Meta.addMethod(instance);
+        }
+
+        metaData.dependencies = dependencies;
+
+        return metaData;
     }
 
     /**
@@ -140,8 +189,8 @@ class Container {
     }
 
     // TODO: jsDoc
-    singletonInstance(abstract, instance = null){
-        this.bindInstance(abstract, instance, true);
+    singletonInstance(abstract, instance = null, dependencies = []){
+        this.bindInstance(abstract, instance, true, dependencies);
     }
 
     /**
@@ -396,7 +445,11 @@ class Container {
     }
 }
 
-// Singleton
+/**
+ * IoC Service Container
+ *
+ * @type {Container}
+ */
 const instance = new Container();
 Object.freeze(instance);
 
