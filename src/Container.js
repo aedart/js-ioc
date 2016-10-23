@@ -392,6 +392,9 @@ class Container {
         }
 
         let dependencies = Meta.get(concrete).dependencies;
+        if(dependencies.length == 0){
+            return args;
+        }
 
         // Resolve each dependency
         let depLength = dependencies.length;
