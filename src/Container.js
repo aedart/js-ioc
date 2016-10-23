@@ -415,16 +415,13 @@ class Container {
                     args[args.length] = resolved;
                     break;
 
-                // Object, boolean or number
+                // Object, boolean or number...etc
                 case 'object':
                 case 'boolean':
                 case 'number':
-                    args[args.length] = elem;
-                    break;
-
-                // Class reference
                 case 'function':
-                    args[args.length] = this.build(elem);
+                case 'symbol':
+                    args[args.length] = elem;
                     break;
 
                 // Unknown
