@@ -61,6 +61,36 @@ describe("IoC Container", function () {
         expect(IoC.getBinding(abstract).isCallback).toBe(false);
     });
 
+    it("can forget binding", function () {
+        let abstract = faker.random.uuid();
+        class A {}
+
+        IoC.bindInstance(abstract, A);
+        IoC.forget(abstract);
+
+        expect(IoC.bound(abstract)).toBe(false);
+    });
+
+    it("can flush all binding", function () {
+        let abstractA = faker.random.uuid();
+        let abstractB = faker.random.uuid();
+        let abstractC = faker.random.uuid();
+
+        class A {}
+        class B {}
+        class C {}
+
+        IoC.bindInstance(abstractA, A);
+        IoC.bindInstance(abstractB, B);
+        IoC.bindInstance(abstractC, C);
+
+        IoC.flush();
+
+        expect(IoC.bound(abstractA)).toBe(false);
+        expect(IoC.bound(abstractB)).toBe(false);
+        expect(IoC.bound(abstractC)).toBe(false);
+    });
+
     it("can assign alias for abstract", function () {
         let abstract = faker.random.uuid();
         let concrete = function(){
@@ -133,6 +163,46 @@ describe("IoC Container", function () {
 
         expect(resolved instanceof B).toBe(true);
         expect(resolved.classA instanceof A).toBe(true);
+    });
+
+    it("can make (resolve) instance from class reference, with primitive dependencies", function () {
+        let abstract = faker.random.uuid();
+
+        let argA = 'John Doe';
+        let argB = false;
+        let argC = function(){
+            return true;
+        };
+        let argD = [1, 2, 3];
+        let argE = Symbol('argE');
+
+        class A {
+            constructor(a, b, c, d, e){
+                this.a = a;
+                this.b = b;
+                this.c = c;
+                this.d = d;
+                this.e = e;
+            }
+        }
+
+        IoC.bindInstance(abstract, A, false, [
+            argA,
+            argB,
+            argC,
+            argD,
+            argE
+        ]);
+
+        let resolved = IoC.make(abstract);
+
+        //console.log(resolved); // Log will fail here, attempt to convert symbol to string
+
+        expect(resolved.a).toBe(argA);
+        expect(resolved.b).toBe(argB);
+        expect(resolved.c).toBe(argC);
+        expect(resolved.d).toBe(argD);
+        expect(resolved.e).toBe(argE);
     });
 
     it("can make (resolve) shared instance from callback", function () {
