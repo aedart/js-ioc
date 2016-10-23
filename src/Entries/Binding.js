@@ -55,7 +55,7 @@ export default class Binding {
         let type = typeof concrete;
 
         if( ! (type === 'function' || type === null)){
-            throw new BindingException('Concrete must be a callback, an object or null');
+            throw new BindingException('Concrete must be a callback, Function or null');
         }
 
         this._concrete = concrete;
