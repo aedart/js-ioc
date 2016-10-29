@@ -218,6 +218,7 @@ class Container {
      * @returns {object}
      *
      * @throws {BindingException} If no binding exists for the given abstract
+     * @throws {BuildException} If unable to build instance
      */
     make(abstract, parameters = []){
 
