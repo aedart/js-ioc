@@ -1,10 +1,10 @@
 {
   "name": "@aedart/js-ioc",
   "version": "0.1.0",
-  "description": "ES6 IoC Service Container",
+  "description": "IoC Service Container",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/karma start karma.conf.js"
   },
   "repository": {
     "type": "git",
