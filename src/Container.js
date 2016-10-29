@@ -358,7 +358,7 @@ class Container {
         this.bindings.clear();
         this.aliases.clear();
 
-        this.instances.forEach(function(value, key){
+        this.instances.forEach(function(value){
             Meta.delete(value);
         });
 
@@ -400,35 +400,13 @@ class Container {
         let depLength = dependencies.length;
         for(let i = 0; i < depLength; i++){
             let elem = dependencies[i];
+            let resolved = this.resolveDependencyType(elem);
 
-            switch (typeof elem){
-                // String
-                case 'string':
-
-                    // If string is actually an abstract or alias reference
-                    // Then we must resolve it.
-                    let resolved = elem;
-                    if(this.containsReference(elem)){
-                        resolved = this.resolveReference(elem);
-                    }
-
-                    args[args.length] = resolved;
-                    break;
-
-                // Object, boolean or number...etc
-                case 'object':
-                case 'boolean':
-                case 'number':
-                case 'function':
-                case 'symbol':
-                    args[args.length] = elem;
-                    break;
-
-                // Unknown
-                default:
-                    throw new BuildException('Unable to resolve "' + elem.toString() + '" dependency for "' + concrete.toString() + '"');
-                    break;
+            if(resolved === null){
+                throw new BuildException('Unable to resolve "' + elem.toString() + '" dependency for "' + concrete.toString() + '"');
             }
+
+            args[args.length] = resolved;
         }
 
         // Finally, return the dependencies
@@ -459,6 +437,45 @@ class Container {
      */
     resolveReference(elem){
         return this.make(elem.replace(REFERENCE_KEY, ''));
+    }
+
+    /**
+     * Resolves the element based on it's type
+     *
+     * @param {*} elem
+     *
+     * @return {*|null} Null if unable to resolve dependency
+     *
+     * @throws {BindingException}
+     */
+    resolveDependencyType(elem){
+        switch (typeof elem){
+            // String
+            case 'string': {
+                // If string is actually an abstract or alias reference
+                // Then we must resolve it.
+                let resolved = elem;
+                if(this.containsReference(elem)){
+                    resolved = this.resolveReference(elem);
+                }
+
+                return resolved;
+            }
+
+            // Object, boolean or number...etc
+            case 'object':
+            case 'boolean':
+            case 'number':
+            case 'function':
+            case 'symbol': {
+                return elem;
+            }
+
+            // Unknown
+            default: {
+                return null;
+            }
+        }
     }
 
     /**
