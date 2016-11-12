@@ -213,14 +213,14 @@ class Container {
      * Resolve the registered abstract from the container
      *
      * @param {string} abstract
-     * @param {Array} [parameters]
+     * @param {Object|Array} [parameters]
      *
      * @returns {object}
      *
      * @throws {BindingException} If no binding exists for the given abstract
      * @throws {BuildException} If unable to build instance
      */
-    make(abstract, parameters = []){
+    make(abstract, parameters = {}){
 
         // If an alias was given, find it's corresponding
         // abstract identifier and return it. If not, the
@@ -256,13 +256,13 @@ class Container {
      * Build and return the concrete instance of given type
      *
      * @param {Function|Binding} concrete
-     * @param {Array} [parameters]
+     * @param {Object|Array} [parameters]
      *
      * @returns {object}
      *
      * @throws {BuildException}
      */
-    build(concrete, parameters = []){
+    build(concrete, parameters = {}){
 
         // If the given "concrete" is a Binding instance and it's
         // declared as having a callback, then invoke the callback
@@ -292,6 +292,13 @@ class Container {
         // But, we only do so, if empty params are given. This way, if the
         // developer desires to build an instance with a different set of
         // dependencies, then that should be allowed.
+        //
+        // Lastly, because we accept an object or an array, we need to
+        // convert the params into an array, if an object was provided.
+        if( ! Array.isArray(parameters)){
+            parameters = Object.keys(parameters).map(key => parameters[key]);
+        }
+
         if(Meta.hasClass(concrete) && parameters.length == 0){
             parameters = this.getDependencies(concrete);
         }
