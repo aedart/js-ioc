@@ -14,7 +14,7 @@ Because this is JavaScript, you will not have the same capabilities as a PHP ver
 * [How to install](#how-to-install)
 * [Import the IoC](#import-the-ioc)
 * [Bindings](#bindings)
-  * [Bind to a callback](#Bind to a callback)
+  * [Bind to a callback](#bind-to-a-callback)
   * [Bind to an instance](#bind-to-an-instance)
   * [Bind singletons](#bind-singletons)
   * [Aliases](#aliases)

@@ -1,6 +1,6 @@
 {
   "name": "@aedart/js-ioc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "IoC Service Container",
   "main": "index.js",
   "scripts": {
