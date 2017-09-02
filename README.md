@@ -226,7 +226,7 @@ Sometimes it can be useful to remove (delete) bindings again. This is especially
 
 **Remove a single binding**
 ```javascript
-IoC.for('my-box');
+IoC.forget('my-box');
 ```
 
 **Remove ALL bindings**
